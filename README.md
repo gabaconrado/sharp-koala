@@ -4,7 +4,7 @@
 
 ## Overview
 
-**Sharp Koala** is a simple TODO application, designed to not have only the basic
+**Sharp Koala** is a simple TODO application, designed to have only the basic
 functionality that works for everyone (everyone being me, of course).
 
 ## Features

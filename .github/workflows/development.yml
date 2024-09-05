@@ -1,0 +1,86 @@
+# ---- General settings ---- #
+name: "Sharp Koala development workflow"
+
+# ---- Triggers ---- #
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    branches:
+      - "main"
+
+# ---- Workflow configuration ---- #
+env:
+  # Configure cargo to show output with colors
+  CARGO_TERM_COLOR: "always"
+
+defaults:
+  # Set default parameters for all run steps
+  run:
+    # Set shell as default script runner to force fail-fast
+    shell: "bash"
+
+# ---- Jobs ---- #
+jobs:
+  # Build job
+  build:
+    runs-on: "ubuntu-latest"
+    steps:
+      # Checkout the source
+      - uses: "actions/checkout@v4"
+      # Cache dependencies to speed-up subsequent similar builds
+      - uses: "actions/cache@v4"
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: "${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}"
+      # Build the software
+      - name: "cargo build"
+        run: "./scripts/ci/build.sh debug"
+
+  # Lint job
+  lint:
+    runs-on: "ubuntu-latest"
+    needs: "build"
+    steps:
+      # Checkout the source
+      - uses: "actions/checkout@v4"
+      # Restore cached dependencies
+      - uses: "actions/cache@v4"
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: "${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}"
+      # Runs the lints
+      - name: "cargo clippy"
+        run: "./scripts/ci/lint.sh"
+
+  # Test job
+  test:
+    runs-on: "ubuntu-latest"
+    needs: "build"
+    steps:
+      # Checkout the source
+      - uses: "actions/checkout@v4"
+      # Restore cached dependencies
+      - uses: "actions/cache@v4"
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: "${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}"
+      # Runs the tests
+      - name: "cargo test"
+        run: "./scripts/ci/test.sh"
